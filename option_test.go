@@ -2,6 +2,7 @@ package option
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 )
 
@@ -15,6 +16,19 @@ func TestSome(t *testing.T) {
 	if o.Value() != "hello" {
 		t.Error("expected value hello, got:", o.Value())
 	}
+}
+
+func ExampleSome() {
+	o := Some("hello")
+
+	// Note: you are not supposed to call these methods directly.
+	// Please take a look at the rest of the functions in the package.
+	fmt.Println(o.HasValue())
+	fmt.Println(o.Value())
+
+	// Output:
+	// true
+	// hello
 }
 
 func TestIsSome(t *testing.T) {
@@ -31,6 +45,18 @@ func TestIsSome(t *testing.T) {
 	})
 }
 
+func ExampleIsSome() {
+	s := Some("hello")
+	n := None[string]()
+
+	fmt.Println(IsSome(s))
+	fmt.Println(IsSome(n))
+
+	// Output:
+	// true
+	// false
+}
+
 func TestNone(t *testing.T) {
 	o := None[string]()
 
@@ -41,6 +67,19 @@ func TestNone(t *testing.T) {
 	if o.Value() != "" {
 		t.Error("None should hold the default value of the type, got:", o.Value())
 	}
+}
+
+func ExampleNone() {
+	o := None[string]()
+
+	// Note: you are not supposed to call these methods directly.
+	// Please take a look at the rest of the functions in the package.
+	fmt.Println(o.HasValue())
+	fmt.Println(o.Value())
+
+	// Output:
+	// false
+	//
 }
 
 func TestIsNone(t *testing.T) {
@@ -55,6 +94,18 @@ func TestIsNone(t *testing.T) {
 			t.Error("None should identify as None")
 		}
 	})
+}
+
+func ExampleIsNone() {
+	s := Some("hello")
+	n := None[string]()
+
+	fmt.Println(IsNone(s))
+	fmt.Println(IsNone(n))
+
+	// Output:
+	// false
+	// true
 }
 
 func TestUnwrap(t *testing.T) {
@@ -79,6 +130,16 @@ func TestUnwrap(t *testing.T) {
 	})
 }
 
+func ExampleUnwrap() {
+	s := Some("hello")
+
+	fmt.Println(Unwrap(s))
+	// fmt.Println(Unwrap(None[string]())) // This would panic
+
+	// Output:
+	// hello
+}
+
 func TestUnwrapOr(t *testing.T) {
 	t.Run("Some", func(t *testing.T) {
 		v := UnwrapOr(Some("hello"), "world")
@@ -95,6 +156,18 @@ func TestUnwrapOr(t *testing.T) {
 			t.Error("expected UnwrapOr to return the provided value, got:", v)
 		}
 	})
+}
+
+func ExampleUnwrapOr() {
+	s := Some("hello")
+	n := None[string]()
+
+	fmt.Println(UnwrapOr(s, "world"))
+	fmt.Println(UnwrapOr(n, "world"))
+
+	// Output:
+	// hello
+	// world
 }
 
 func TestUnwrapOrDefault(t *testing.T) {
@@ -115,6 +188,18 @@ func TestUnwrapOrDefault(t *testing.T) {
 	})
 }
 
+func ExampleUnwrapOrDefault() {
+	s := Some("hello")
+	n := None[string]()
+
+	fmt.Println(UnwrapOrDefault(s))
+	fmt.Println(UnwrapOrDefault(n))
+
+	// Output:
+	// hello
+	//
+}
+
 func TestUnwrapOrElse(t *testing.T) {
 	t.Run("Some", func(t *testing.T) {
 		v := UnwrapOrElse(Some("hello"), func() string { return "world" })
@@ -131,6 +216,18 @@ func TestUnwrapOrElse(t *testing.T) {
 			t.Error("expected UnwrapOrDefault to return the computed value, got:", v)
 		}
 	})
+}
+
+func ExampleUnwrapOrElse() {
+	s := Some("hello")
+	n := None[string]()
+
+	fmt.Println(UnwrapOrElse(s, func() string { return "world" }))
+	fmt.Println(UnwrapOrElse(n, func() string { return "world" }))
+
+	// Output:
+	// hello
+	// world
 }
 
 func TestMap(t *testing.T) {
