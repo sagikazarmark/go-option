@@ -1,6 +1,9 @@
 package option
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 func TestSome(t *testing.T) {
 	o := Some("hello")
@@ -152,6 +155,72 @@ func TestMap(t *testing.T) {
 	})
 }
 
+func TestTryMap(t *testing.T) {
+	t.Run("Some", func(t *testing.T) {
+		t.Run("OK", func(t *testing.T) {
+			o := Some("hello")
+
+			v, err := TryMap(o, func(v string) (int, error) { return len(v), nil })
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !Equals(v, Some(5)) {
+				t.Error("expected TryMap to return Some(5), got:", v)
+			}
+		})
+
+		t.Run("Error", func(t *testing.T) {
+			o := Some("hello")
+
+			e := errors.New("error")
+
+			v, err := TryMap(o, func(v string) (int, error) { return len(v), e })
+			if err == nil {
+				t.Fatal("expected error")
+			}
+
+			if err != e {
+				t.Error("expected TryMap to return error, got:", err)
+			}
+
+			if !IsNone(v) {
+				t.Error("expected TryMap to return None, got:", v)
+			}
+		})
+	})
+
+	t.Run("None", func(t *testing.T) {
+		t.Run("OK", func(t *testing.T) {
+			o := None[string]()
+
+			v, err := TryMap(o, func(v string) (int, error) { return len(v), nil })
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !IsNone(v) {
+				t.Error("expected TryMap to return None, got:", v)
+			}
+		})
+
+		t.Run("Error", func(t *testing.T) {
+			o := None[string]()
+
+			e := errors.New("error")
+
+			v, err := TryMap(o, func(v string) (int, error) { return len(v), e })
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !IsNone(v) {
+				t.Error("expected TryMap to return None, got:", v)
+			}
+		})
+	})
+}
+
 func TestMapOr(t *testing.T) {
 	t.Run("Some", func(t *testing.T) {
 		o := Some("hello")
@@ -174,6 +243,72 @@ func TestMapOr(t *testing.T) {
 	})
 }
 
+func TestTryMapOr(t *testing.T) {
+	t.Run("Some", func(t *testing.T) {
+		t.Run("OK", func(t *testing.T) {
+			o := Some("hello")
+
+			v, err := TryMapOr(o, 10, func(v string) (int, error) { return len(v), nil })
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if v != 5 {
+				t.Error("expected TryMapOr to return 5, got:", v)
+			}
+		})
+
+		t.Run("Error", func(t *testing.T) {
+			o := Some("hello")
+
+			e := errors.New("error")
+
+			v, err := TryMapOr(o, 10, func(v string) (int, error) { return len(v), e })
+			if err == nil {
+				t.Fatal("expected error")
+			}
+
+			if err != e {
+				t.Error("expected TryMapOr to return error, got:", err)
+			}
+
+			if v != 5 {
+				t.Error("expected TryMapOr to return 5, got:", v)
+			}
+		})
+	})
+
+	t.Run("None", func(t *testing.T) {
+		t.Run("OK", func(t *testing.T) {
+			o := None[string]()
+
+			v, err := TryMapOr(o, 10, func(v string) (int, error) { return len(v), nil })
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if v != 10 {
+				t.Error("expected TryMapOr to return 10, got:", v)
+			}
+		})
+
+		t.Run("Error", func(t *testing.T) {
+			o := None[string]()
+
+			e := errors.New("error")
+
+			v, err := TryMapOr(o, 10, func(v string) (int, error) { return len(v), e })
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if v != 10 {
+				t.Error("expected TryMapOr to return 10, got:", v)
+			}
+		})
+	})
+}
+
 func TestMapOrElse(t *testing.T) {
 	t.Run("Some", func(t *testing.T) {
 		o := Some("hello")
@@ -193,6 +328,72 @@ func TestMapOrElse(t *testing.T) {
 		if v != 10 {
 			t.Error("expected MapOrElse to return 10, got:", v)
 		}
+	})
+}
+
+func TestTryMapOrElse(t *testing.T) {
+	t.Run("Some", func(t *testing.T) {
+		t.Run("OK", func(t *testing.T) {
+			o := Some("hello")
+
+			v, err := TryMapOrElse(o, func() int { return 10 }, func(v string) (int, error) { return len(v), nil })
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if v != 5 {
+				t.Error("expected TryMapOrElse to return 5, got:", v)
+			}
+		})
+
+		t.Run("Error", func(t *testing.T) {
+			o := Some("hello")
+
+			e := errors.New("error")
+
+			v, err := TryMapOrElse(o, func() int { return 10 }, func(v string) (int, error) { return len(v), e })
+			if err == nil {
+				t.Fatal("expected error")
+			}
+
+			if err != e {
+				t.Error("expected TryMapOrElse to return error, got:", err)
+			}
+
+			if v != 5 {
+				t.Error("expected TryMapOrElse to return 5, got:", v)
+			}
+		})
+	})
+
+	t.Run("None", func(t *testing.T) {
+		t.Run("OK", func(t *testing.T) {
+			o := None[string]()
+
+			v, err := TryMapOrElse(o, func() int { return 10 }, func(v string) (int, error) { return len(v), nil })
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if v != 10 {
+				t.Error("expected TryMapOrElse to return 10, got:", v)
+			}
+		})
+
+		t.Run("Error", func(t *testing.T) {
+			o := None[string]()
+
+			e := errors.New("error")
+
+			v, err := TryMapOrElse(o, func() int { return 10 }, func(v string) (int, error) { return len(v), e })
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if v != 10 {
+				t.Error("expected TryMapOrElse to return 10, got:", v)
+			}
+		})
 	})
 }
 

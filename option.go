@@ -109,6 +109,21 @@ func Map[T any, U any](o Option[T], f func(v T) U) Option[U] {
 	return Some(f(o.Value()))
 }
 
+// TryMap applies the provided function to the contained value (if any) or returns a None.
+// If the function returns an error, it propagates back (with a None).
+func TryMap[T any, U any](o Option[T], f func(v T) (U, error)) (Option[U], error) {
+	if IsNone(o) {
+		return None[U](), nil
+	}
+
+	v, err := f(o.Value())
+	if err != nil {
+		return None[U](), err
+	}
+
+	return Some(v), nil
+}
+
 // MapOr applies the provided function to the contained value (if any) or returns the provided default value.
 func MapOr[T any, U any](o Option[T], d U, f func(v T) U) U {
 	if IsNone(o) {
@@ -118,10 +133,29 @@ func MapOr[T any, U any](o Option[T], d U, f func(v T) U) U {
 	return f(o.Value())
 }
 
+// TryMapOr applies the provided function to the contained value (if any) or returns the provided default value.
+// If the function returns an error, it propagates back.
+func TryMapOr[T any, U any](o Option[T], d U, f func(v T) (U, error)) (U, error) {
+	if IsNone(o) {
+		return d, nil
+	}
+
+	return f(o.Value())
+}
+
 // MapOrElse applies the provided function to the contained value (if any) or computes it from the provided default function.
 func MapOrElse[T any, U any](o Option[T], d func() U, f func(v T) U) U {
 	if IsNone(o) {
 		return d()
+	}
+
+	return f(o.Value())
+}
+
+// TryMapOrElse applies the provided function to the contained value (if any) or computes it from the provided default function.
+func TryMapOrElse[T any, U any](o Option[T], d func() U, f func(v T) (U, error)) (U, error) {
+	if IsNone(o) {
+		return d(), nil
 	}
 
 	return f(o.Value())
